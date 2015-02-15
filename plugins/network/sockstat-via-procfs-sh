@@ -1,0 +1,55 @@
+#/bin/sh
+
+case $1 in
+	autoconf)
+		if [ -r '/proc/net/sockstat' ]; then
+			echo 'yes'
+			exit 0
+		else
+			echo 'no (/proc/net/sockstat not found)'
+			exit 1
+		fi
+		;;
+	config)
+		cat <<'EOM'
+graph_title sockstat
+graph_category NETWORK
+graph_info This graph show all values from /proc/net/sockstat
+graph_category network
+sockets_used.label sockets used
+tcp_inuse.label TCP inuse
+tcp_orphan.label TCP orphan
+tcp_tw.label TCP tw
+tcp_alloc.label TCP alloc
+tcp_mem.label TCP mem
+udp_inuse.label UDP inuse
+udp_mem.label UDP mem
+udplite_inuse.label UDPLITE inuse
+raw_inuse.label RAW inuse
+frag_inuse.label FRAG inuse
+frag_memory.label FRAG memory
+EOM
+		exit 0
+		;;
+esac
+
+awk '{
+if ($0~ /^sockets: used/) print "sockets_used.value", $3
+else if ($0~ /^TCP: inuse/) {
+	print "tcp_inuse.value", $3
+	print "tcp_orphan.value", $5
+	print "tcp_tw.value", $7
+	print "tcp_alloc.value", $9
+	print "tcp_mem.value", $11
+}
+else if ($0~ /^UDP: inuse/) {
+	print "udp_inuse.value", $3
+	print "udp_mem.value", $5
+}
+else if ($0~ /^UDPLITE: inuse/) print "udplite_inuse.value", $3
+else if ($0~ /^RAW: inuse/) print "raw_inuse.value", $3
+else if ($0~ /^FRAG: inuse/) {
+	print "frag_inuse.value", $3
+	print "frag_memory.value", $3
+}
+}' '/proc/net/sockstat'
