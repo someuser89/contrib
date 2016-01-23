@@ -1,0 +1,50 @@
+#!/bin/sh
+#
+# Plugin to monitor connected network devices
+#
+# Parameters understood:
+#
+#       config   (required)
+#       autoconf (optional)
+#
+#  Made by Martin89 (martin AT martin89 DOT de)
+#
+
+#%# family=contrib
+#%# capabilities=autoconf
+
+getInterface () {
+	awk '$1~ /^(eth|vlan|wlan|ath|ra)[0-9]+(\.[0-9]+)?/ { sub(":", ""); print $1 }' /proc/net/dev
+}
+
+case "$1" in
+	autoconf)
+		if which ip >/dev/null 2>&1; then
+			echo 'yes'
+			exit 0
+		else
+			echo "no (can't find ip binary)"
+			exit 1
+		fi
+	;;
+	config)
+		cat <<'EOM'
+graph_title connected network devices
+graph_args --base 1000 -l 0 -r
+graph_vlabel Count
+graph_category network
+graph_info This graph shows the number of connected devices for a interface.
+EOM
+		for iface in $(getInterface | sort); do
+			iface_clean=$(echo $iface | tr . _)
+			echo "${iface_clean}.label $iface"
+		done
+		exit 0
+	;;
+esac
+
+for iface in $(getInterface); do
+	iface_clear=$(echo $iface | tr . _)
+	count=$(ip neigh show dev "$iface" | awk '/lladdr/{print $3}' | sort -u | wc -l)
+	echo "${iface_clear}.value $count"
+done
