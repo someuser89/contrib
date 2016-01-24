@@ -31,8 +31,8 @@ graph_vlabel Count
 graph_category network
 graph_info This graph shows the number of imported routes from a bgp or ospf protocol in bird.
 EOM
-		# Attention not all protocol names valid as valu ename in munin
-		birdc -r show protocols | awk 'FNR > 3{ if ($2 ~ /^(BGP|OSPF)$/){ print $1".label From "$2" protocol " $1" imported routes"} }'
+		# Attention not all protocol names valid as value name in MUNIN
+		birdc -r show protocols | awk 'FNR > 3{ if ($2 ~ /^(BGP|OSPF)$/){ print $1".label "$2" protocol "$1} }'
 		exit 0
 	;;
 esac
