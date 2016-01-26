@@ -45,6 +45,6 @@ esac
 
 for iface in $(getInterface); do
 	iface_clear=$(echo $iface | tr . _)
-	count=$(ip neigh show dev "$iface" | awk '/lladdr/{print $3}' | sort -u | wc -l)
+	count=$(ip neigh show dev "$iface" nud reachable | awk '/lladdr/{print $3}' | sort -u | wc -l)
 	echo "${iface_clear}.value $count"
 done
