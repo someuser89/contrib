@@ -3,6 +3,8 @@
 # Plugin to monitor imported routes from bgp and ospf protocols in bird
 # use ./bird for IPv4 and ./bird6 for IPv6.
 #
+# nedd root rights
+#
 # Parameters understood:
 #
 #       config   (required)
