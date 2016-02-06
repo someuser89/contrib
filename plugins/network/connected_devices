@@ -24,14 +24,12 @@ case "$1" in
 		fi
 	;;
 	config)
-		cat <<'EOM'
-graph_title connected network devices
-graph_args --base 1000 -l 0 -r
-graph_vlabel Count
-graph_category network
-graph_info This graph shows the number of connected devices for a interface.
-EOM
 		awk '$1~ /^(eth|vlan|wlan|ath|ra)[0-9]+(\.[0-9]+)?/ { sub(":", ""); n=$1; gsub("\\.", "_"); print $1".label "n}' /proc/net/dev | sort
+		echo 'graph_title connected network devices'
+		echo 'graph_args --base 1000 -l 0 -r'
+		echo 'graph_vlabel Count'
+		echo 'graph_category network'
+		echo 'graph_info This graph shows the number of connected devices for a interface.'
 		exit 0
 	;;
 esac
