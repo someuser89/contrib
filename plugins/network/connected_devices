@@ -13,9 +13,11 @@
 #%# family=contrib
 #%# capabilities=autoconf
 
+. $MUNIN_LIBDIR/plugins/plugin.sh
+
 case "$1" in
 	autoconf)
-		if which ip >/dev/null 2>&1; then
+		if [ -x /bin/ip ]; then
 			echo 'yes'
 			exit 0
 		else
@@ -24,17 +26,21 @@ case "$1" in
 		fi
 	;;
 	config)
-		awk '$1~ /^(eth|vlan|wlan|ath|ra)[0-9]+(\.[0-9]+)?/ { sub(":", ""); n=$1; gsub("\\.", "_"); print $1".label "n}' /proc/net/dev | sort
 		echo 'graph_title connected network devices'
 		echo 'graph_args --base 1000 -l 0 -r'
 		echo 'graph_vlabel Count'
 		echo 'graph_category network'
 		echo 'graph_info This graph shows the number of connected devices for a interface.'
+		for iface in $(/usr/bin/awk '$1~ /^(eth|vlan|wlan|ath|ra)[0-9]+(\.[0-9]+)?/ { sub(":", ""); print $1 }' /proc/net/dev | /usr/bin/sort -n); do
+			iface_clean=$(clean_fieldname iface)
+			echo "${iface_clean}.label $iface"
+		done
 		exit 0
 	;;
 esac
 
-for iface in $(awk '$1~ /^(eth|vlan|wlan|ath|ra)[0-9]+(\.[0-9]+)?/ { sub(":", ""); print $1 }' /proc/net/dev); do
-	echo "$iface " | awk '{ gsub("\\.", "_"); printf $1".value "}'
-	ip neigh show dev "$iface" nud reachable | cut -d ' ' -f 3 | sort -u | wc -l
+for iface in $(/usr/bin/awk '$1~ /^(eth|vlan|wlan|ath|ra)[0-9]+(\.[0-9]+)?/ { sub(":", ""); print $1 }' /proc/net/dev); do
+	iface_clean=$(clean_fieldname $iface)
+	echo -n "$iface_clean.value "
+	/bin/ip neigh show dev "$iface" nud reachable | /usr/bin/cut -d ' ' -f 3 | /usr/bin/sort -u | /usr/bin/wc -l
 done
