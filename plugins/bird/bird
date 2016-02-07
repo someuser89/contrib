@@ -60,6 +60,6 @@ esac
 "$bird" -r show protocols | /usr/bin/awk 'FNR > 3{ if ($2 ~ /^(BGP|OSPF)$/){ print $1} }' |
 while read name; do
 	name_clean=$(clean_fieldname "$name")
-	count=$("$bird" -r show protocols all "$name" | /usr/bin/awk '/^ *Routes:/{print $2; exit}')
-	echo "$name_clean.value $count"
+	echo -n "$name_clean.value "
+	"$bird" -r show protocols all "$name" | /usr/bin/awk '/^ *Routes:/{print $2; exit}'
 done
