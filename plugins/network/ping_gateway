@@ -12,16 +12,18 @@
 #%# family=contrib
 #%# capabilities=autoconf
 
+. $MUNIN_LIBDIR/plugins/plugin.sh
+
 getGateway4 () {
-	ip -4 route show table all default | awk '/^default /{print $3}'
+	/bin/ip -4 route show table all default | /usr/bin/awk '/^default /{print $3}' || return 1
 }
 getGateway6 () {
-	ip -6 route show table all default | awk '/^default /{print $3 "_" $5}'
+	/bin/ip -6 route show table all default | /usr/bin/awk '/^default /{print $3, $5}' || return 1
 }
 
 case "$1" in
 	autoconf)
-		if which ip >/dev/null 2>&1 && which ping >/dev/null 2>&1 && which ping6 >/dev/null 2>&1; then
+		if [ -x /bin/ip ] && [ -x /bin/ping ] && [ -x /bin/ping6 ]; then
 			echo 'yes'
 			exit 0
 		else
@@ -30,40 +32,34 @@ case "$1" in
 		fi
 	;;
 	config)
-		cat <<'EOM'
-graph_title rtt to gateways
-graph_args --base 1000 -l 0 -r
-graph_vlabel latency in ms
-graph_category network
-graph_info This graph shows the latency to the gateway.
-EOM
-		for gw in $(getGateway4); do
-			gw_clear=$(echo "$gw" | tr . _)
+		echo 'graph_title rtt to gateways'
+		echo 'graph_args --base 1000 -l 0 -r'
+		echo 'graph_vlabel latency in ms'
+		echo 'graph_category network'
+		echo 'graph_info This graph shows the latency to the gateway.'
+		getGateway4 | while read gw; do
+			gw_clear=$(clean_fieldname "$gw")
 			echo "${gw_clear}.label $gw"
 		done
-		for gw_tuple in $(getGateway6); do
-			gw_clear=$(echo "$gw_tuple" | sed 's/://g' | sed 's/%/_/')
-			echo "${gw_clear}.label $gw_tuple"
+		getGateway6 | while read gw iface; do
+			gw_clear=$(clean_fieldname "${gw}_$iface")
+			echo "${gw_clear}.label $gw % $iface"
 		done
 		exit 0
 	;;
 esac
 
 {
-	gw_list=$(getGateway4)
-	for gw in $gw_list; do
-		gw_clear=$(echo "$gw" | tr . _)
-		ping -q -n -t 1 -c 3 "$gw" | sed 's/\// /g' | awk "/^rtt/{print \"${gw_clear}.value\", \$8}"
+	getGateway4 | while read gw; do
+		gw_clear=$(clean_fieldname "$gw")
+		/bin/ping -q -n -t 1 -c 3 "$gw" | /bin/sed 's/\// /g' | /usr/bin/awk "/^rtt/{print \"${gw_clear}.value\", \$8}"
 	done
 } &
 
 {
-	gw_list="$(getGateway6)"
-	for gw_tuple in $gw_list; do
-		gw=$(echo "$gw_tuple" | cut -d _ -f 1)
-		gw_clear=$(echo "$gw_tuple" | sed 's/://g' | sed 's/%/_/')
-		iface=$(echo "$gw_tuple" | cut -d _ -f 2)
-		ping6 -q -n -t 1 -c 3 -I "$iface" "$gw" | sed 's/\// /g' | awk "/^rtt/{print \"${gw_clear}.value\", \$8}"
+	getGateway6 | while read gw iface; do
+		gw_clear=$(clean_fieldname "${gw}_$iface")
+		/bin/ping6 -q -n -t 1 -c 3 -I "$iface" "$gw" | /bin/sed 's/\// /g' | /usr/bin/awk "/^rtt/{print \"${gw_clear}.value\", \$8}"
 	done
 } &
 wait
