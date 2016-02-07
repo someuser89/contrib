@@ -18,11 +18,11 @@
 
 case $(basename "$0") in
 bird)
-	bird='usr/sbin/birdc'
+	bird='/usr/sbin/birdc'
 	name='bird'
 	;;
 bird6)
-	bird='usr/sbin/birdc6'
+	bird='/usr/sbin/birdc6'
 	name='bird6'
 	;;
 *)
