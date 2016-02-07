@@ -54,6 +54,6 @@ EOM
 	;;
 esac
 
-for proto in $(birdc -r show protocols | awk 'FNR > 3{ if ($2 ~ /^(BGP|OSPF)$/){ print $1} }'); do
+for proto in $("$bird" -r show protocols | awk 'FNR > 3{ if ($2 ~ /^(BGP|OSPF)$/){ print $1} }'); do
 	$bird -r show protocols all "$proto" | awk 'FNR == 4{ name = $1 }/^ *Routes:/{print name".value "$2; exit}'
 done
