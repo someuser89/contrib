@@ -16,7 +16,7 @@
 #%# family=contrib
 #%# capabilities=autoconf
 
-case "$(basename $0)" in
+case $(basename "$0") in
 bird)
 	bird='usr/sbin/birdc'
 	name='bird'
