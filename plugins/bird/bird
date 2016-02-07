@@ -18,11 +18,11 @@
 
 case "$(basename $0)" in
 bird)
-	bird='birdc'
+	bird='usr/sbin/birdc'
 	name='bird'
 	;;
 bird6)
-	bird='birdc6'
+	bird='usr/sbin/birdc6'
 	name='bird6'
 	;;
 *)
@@ -32,7 +32,7 @@ esac
 
 case "$1" in
 	autoconf)
-		if which birdc >/dev/null 2>&1; then
+		if [ -x "$bird" ]; then
 			echo 'yes'
 			exit 0
 		else
@@ -47,7 +47,7 @@ case "$1" in
 		echo 'graph_category network'
 		echo 'graph_info This graph shows the number of imported routes from a bgp or ospf protocol in bird.'
 		# Attention not all protocol names valid as value name in MUNIN
-		$bird -r show protocols | awk 'FNR > 3{ if ($2 ~ /^(BGP|OSPF)$/){ print $1".label "$2" protocol "$1} }' | sort -n
+		"$bird" -r show protocols | /usr/bin/awk 'FNR > 3{ if ($2 ~ /^(BGP|OSPF)$/){ print $1".label "$2" protocol "$1} }' | /usr/bin/sort -n
 		exit 0
 	;;
 esac
