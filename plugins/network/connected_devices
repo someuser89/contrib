@@ -31,7 +31,8 @@ case "$1" in
 		echo 'graph_vlabel Count'
 		echo 'graph_category network'
 		echo 'graph_info This graph shows the number of connected devices for a interface.'
-		for iface in $(/usr/bin/awk '$1~ /^(eth|vlan|wlan|ath|ra)[0-9]+(\.[0-9]+)?/ { sub(":", ""); print $1 }' /proc/net/dev | /usr/bin/sort -n); do
+		/usr/bin/awk '$1~ /^(eth|vlan|wlan|ath|ra)[0-9]+(\.[0-9]+)?/ { sub(":", ""); print $1 }' /proc/net/dev | /usr/bin/sort -n |
+		while read iface; do
 			iface_clean=$(clean_fieldname "$iface")
 			echo "${iface_clean}.label $iface"
 		done
@@ -39,7 +40,8 @@ case "$1" in
 	;;
 esac
 
-for iface in $(/usr/bin/awk '$1~ /^(eth|vlan|wlan|ath|ra)[0-9]+(\.[0-9]+)?/ { sub(":", ""); print $1 }' /proc/net/dev); do
+/usr/bin/awk '$1~ /^(eth|vlan|wlan|ath|ra)[0-9]+(\.[0-9]+)?/ { sub(":", ""); print $1 }' /proc/net/dev |
+while read iface; do
 	iface_clean=$(clean_fieldname $iface)
 	echo -n "$iface_clean.value "
 	/bin/ip neigh show dev "$iface" nud reachable | /usr/bin/cut -d ' ' -f 3 | /usr/bin/sort -u | /usr/bin/wc -l
