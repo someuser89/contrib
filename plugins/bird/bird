@@ -61,5 +61,5 @@ esac
 while read name; do
 	name_clean=$(clean_fieldname "$name")
 	echo -n "$name_clean.value "
-	"$bird" -r show protocols all "$name" | /usr/bin/awk '/^ *Routes:/{print $2; exit}'
+	"$bird" -r show protocols all "$name" | /usr/bin/awk '/^ *Routes:/{ n=$2; if ($5 == "filtered,") { n=n-$4 }; print n; exit}'
 done
