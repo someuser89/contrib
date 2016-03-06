@@ -46,7 +46,7 @@ case "$1" in
 		echo "graph_title routes in $name"
 		echo 'graph_args --base 1000 -l 0 -r'
 		echo 'graph_vlabel Count'
-		echo 'graph_category network'
+		echo 'graph_category bird'
 		echo 'graph_info This graph shows the number of imported routes from a bgp or ospf protocol in bird.'
 		"$bird" -r show protocols | /usr/bin/awk 'FNR > 3{ if ($2 ~ /^(BGP|OSPF)$/){ print $1, $2} }' | /usr/bin/sort -n |
 		while read name proto; do
